@@ -1,0 +1,85 @@
+# Configuration for GAN-Based Road Damage Classification Experiment Pipeline
+
+project:
+  name: "GAN-Based Image Deblurring for Robust CNN-Based Road Damage Classification"
+  version: "1.0.0"
+  seed: 42
+  device: "cuda"  # fallback to 'cpu' if cuda unavailable
+
+data:
+  raw_dir: "data/raw/RDD2022"
+  processed_dir: "data/processed/patches"
+  manifest_path: "data/processed/splits_manifest.json"
+  class_counts_path: "data/processed/class_counts.json"
+  patch_size: [128, 128]   # Default patch dimension (H, W). Can be scaled to 224 for MobileNetV2
+  split_ratios:
+    train: 0.70
+    val: 0.15
+    test: 0.15
+  classes:
+    0: "Normal"
+    1: "Longitudinal Crack"  # D00 in RDD
+    2: "Transverse Crack"    # D10 in RDD
+    3: "Alligator Crack"     # D20 in RDD
+    4: "Pothole"             # D40 in RDD
+  rdd_code_mapping:
+    "D00": 1  # Wheel mark part longitudinal crack
+    "D10": 2  # Equal interval transverse crack
+    "D20": 3  # Alligator crack
+    "D40": 4  # Pothole
+  padding_ratio: 0.15        # Context padding around bounding boxes
+  normal_patches_per_image: 2 # Number of negative normal patches sampled from empty regions
+
+degradation:
+  blur_types:
+    - "mild_motion"
+    - "strong_motion"
+    - "defocus"
+  mild_motion:
+    kernel_sizes: [5, 7, 9]
+    angle_range: [0, 180]
+  strong_motion:
+    kernel_sizes: [13, 17, 21]
+    angle_range: [0, 180]
+  defocus:
+    kernel_sizes: [7, 11, 15]
+    sigma_range: [1.5, 3.5]
+  fixed_test_seed: 999  # Ensures frozen test degradation across all runs
+
+classical_restoration:
+  method: "unsharp_mask"  # choices: "unsharp_mask", "wiener", "bilateral_sharpen"
+  unsharp_strength: 1.5
+  radius: 1.0
+
+models:
+  gan:
+    in_channels: 3
+    out_channels: 3
+    generator_features: 64
+    discriminator_features: 64
+    lambda_l1: 100.0
+    lr: 0.0002
+    beta1: 0.5
+    beta2: 0.999
+    batch_size: 16
+    epochs: 40
+    save_every: 5
+    early_stopping_patience: 8
+
+  classifier:
+    architecture: "mobilenet_v2" # choices: "mobilenet_v2", "custom_cnn"
+    num_classes: 5
+    pretrained: true
+    fine_tune_layers: 4          # Number of top layers to unfreeze in MobileNetV2
+    lr: 0.0005
+    weight_decay: 0.0001
+    batch_size: 32
+    epochs: 25
+    use_class_weights: true      # Handles damage class imbalance
+
+evaluation:
+  hardware: "Declared dynamically at runtime (CPU or CUDA)"
+  batch_size: 1
+  export_dir: "results"
+  confusion_matrix_dir: "results/figures/confusion_matrices"
+  samples_dir: "results/figures/restoration_samples"

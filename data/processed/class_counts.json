@@ -1,0 +1,22 @@
+{
+  "train": {
+    "Normal": 45,
+    "Pothole": 20,
+    "Alligator Crack": 23,
+    "Transverse Crack": 12,
+    "Longitudinal Crack": 16
+  },
+  "val": {
+    "Transverse Crack": 3,
+    "Longitudinal Crack": 5,
+    "Pothole": 4,
+    "Normal": 8,
+    "Alligator Crack": 6
+  },
+  "test": {
+    "Pothole": 4,
+    "Alligator Crack": 4,
+    "Normal": 11,
+    "Longitudinal Crack": 3
+  }
+}
