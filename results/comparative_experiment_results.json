@@ -1,60 +1,60 @@
 {
   "Exp_A_Clean": {
-    "accuracy": 0.7727272727272727,
-    "macro_f1": 0.6726050420168066,
-    "weighted_f1": 0.7970970206264325,
+    "accuracy": 0.8818181818181818,
+    "macro_f1": 0.8772227245328511,
+    "weighted_f1": 0.8813414433667598,
     "per_class": {
       "Normal": {
-        "precision": 1.0,
-        "recall": 0.5454545454545454,
-        "f1_score": 0.7058823529411765
+        "precision": 0.95,
+        "recall": 0.9743589743589743,
+        "f1_score": 0.9620253164556962
       },
       "Longitudinal Crack": {
-        "precision": 0.75,
-        "recall": 1.0,
+        "precision": 0.868421052631579,
+        "recall": 0.8461538461538461,
         "f1_score": 0.8571428571428571
       },
       "Transverse Crack": {
+        "precision": 0.8125,
+        "recall": 0.8125,
+        "f1_score": 0.8125
+      },
+      "Alligator Crack": {
         "precision": 0.0,
         "recall": 0.0,
         "f1_score": 0.0
       },
-      "Alligator Crack": {
-        "precision": 1.0,
-        "recall": 1.0,
-        "f1_score": 1.0
-      },
       "Pothole": {
-        "precision": 0.6666666666666666,
-        "recall": 1.0,
-        "f1_score": 0.8
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1_score": 0.0
       }
     }
   },
   "Exp_B_Blurred": {
-    "accuracy": 0.3181818181818182,
-    "macro_f1": 0.30833333333333335,
-    "weighted_f1": 0.20909090909090908,
+    "accuracy": 0.5727272727272728,
+    "macro_f1": 0.5547587031226654,
+    "weighted_f1": 0.5533230104722708,
     "per_class": {
       "Normal": {
-        "precision": 0.0,
-        "recall": 0.0,
-        "f1_score": 0.0
+        "precision": 0.8666666666666667,
+        "recall": 0.6666666666666666,
+        "f1_score": 0.7536231884057971
       },
       "Longitudinal Crack": {
-        "precision": 0.2222222222222222,
-        "recall": 0.6666666666666666,
+        "precision": 0.6,
+        "recall": 0.23076923076923078,
         "f1_score": 0.3333333333333333
       },
       "Transverse Crack": {
-        "precision": 1.0,
-        "recall": 0.25,
-        "f1_score": 0.4
+        "precision": 0.4307692307692308,
+        "recall": 0.875,
+        "f1_score": 0.5773195876288659
       },
       "Alligator Crack": {
-        "precision": 0.3333333333333333,
-        "recall": 1.0,
-        "f1_score": 0.5
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1_score": 0.0
       },
       "Pothole": {
         "precision": 0.0,
@@ -64,61 +64,61 @@
     }
   },
   "Exp_C_Classical_Restored": {
-    "accuracy": 0.2727272727272727,
-    "macro_f1": 0.21333333333333332,
-    "weighted_f1": 0.18383838383838383,
+    "accuracy": 0.6636363636363637,
+    "macro_f1": 0.6602869838163955,
+    "weighted_f1": 0.6582493023669493,
     "per_class": {
       "Normal": {
-        "precision": 0.0,
-        "recall": 0.0,
-        "f1_score": 0.0
+        "precision": 0.7714285714285715,
+        "recall": 0.6923076923076923,
+        "f1_score": 0.7297297297297297
       },
       "Longitudinal Crack": {
-        "precision": 0.16666666666666666,
-        "recall": 0.3333333333333333,
-        "f1_score": 0.2222222222222222
+        "precision": 0.6551724137931034,
+        "recall": 0.48717948717948717,
+        "f1_score": 0.5588235294117647
       },
       "Transverse Crack": {
+        "precision": 0.5869565217391305,
+        "recall": 0.84375,
+        "f1_score": 0.6923076923076923
+      },
+      "Alligator Crack": {
         "precision": 0.0,
         "recall": 0.0,
         "f1_score": 0.0
       },
-      "Alligator Crack": {
-        "precision": 1.0,
-        "recall": 0.25,
-        "f1_score": 0.4
-      },
       "Pothole": {
-        "precision": 0.2857142857142857,
-        "recall": 1.0,
-        "f1_score": 0.4444444444444444
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1_score": 0.0
       }
     }
   },
   "Exp_D_GAN_Restored": {
-    "accuracy": 0.2727272727272727,
-    "macro_f1": 0.22023809523809523,
-    "weighted_f1": 0.13744588744588745,
+    "accuracy": 0.4,
+    "macro_f1": 0.3671101925914586,
+    "weighted_f1": 0.359750747167028,
     "per_class": {
       "Normal": {
-        "precision": 0.0,
-        "recall": 0.0,
-        "f1_score": 0.0
+        "precision": 0.8333333333333334,
+        "recall": 0.2564102564102564,
+        "f1_score": 0.39215686274509803
       },
       "Longitudinal Crack": {
-        "precision": 0.4,
-        "recall": 0.6666666666666666,
-        "f1_score": 0.5
+        "precision": 0.42857142857142855,
+        "recall": 0.15384615384615385,
+        "f1_score": 0.22641509433962265
       },
       "Transverse Crack": {
+        "precision": 0.3333333333333333,
+        "recall": 0.875,
+        "f1_score": 0.4827586206896552
+      },
+      "Alligator Crack": {
         "precision": 0.0,
         "recall": 0.0,
         "f1_score": 0.0
-      },
-      "Alligator Crack": {
-        "precision": 0.23529411764705882,
-        "recall": 1.0,
-        "f1_score": 0.38095238095238093
       },
       "Pothole": {
         "precision": 0.0,
@@ -128,77 +128,77 @@
     }
   },
   "Exp_E_Blur_Augmented_Classifier": {
-    "accuracy": 0.5909090909090909,
-    "macro_f1": 0.4340350877192982,
-    "weighted_f1": 0.6062998405103668,
+    "accuracy": 0.7818181818181819,
+    "macro_f1": 0.777440519832989,
+    "weighted_f1": 0.779424183849498,
     "per_class": {
       "Normal": {
-        "precision": 0.875,
-        "recall": 0.6363636363636364,
-        "f1_score": 0.7368421052631579
+        "precision": 0.813953488372093,
+        "recall": 0.8974358974358975,
+        "f1_score": 0.8536585365853658
       },
       "Longitudinal Crack": {
-        "precision": 1.0,
-        "recall": 0.3333333333333333,
-        "f1_score": 0.5
+        "precision": 0.8125,
+        "recall": 0.6666666666666666,
+        "f1_score": 0.7323943661971831
       },
       "Transverse Crack": {
+        "precision": 0.7142857142857143,
+        "recall": 0.78125,
+        "f1_score": 0.746268656716418
+      },
+      "Alligator Crack": {
         "precision": 0.0,
         "recall": 0.0,
         "f1_score": 0.0
       },
-      "Alligator Crack": {
-        "precision": 1.0,
-        "recall": 0.25,
-        "f1_score": 0.4
-      },
       "Pothole": {
-        "precision": 0.36363636363636365,
-        "recall": 1.0,
-        "f1_score": 0.5333333333333333
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1_score": 0.0
       }
     }
   },
   "Restoration_Quality": {
-    "blurred_psnr": 28.09,
-    "blurred_ssim": 1.7032,
-    "classical_psnr": 27.77,
-    "classical_ssim": 1.6648,
-    "gan_psnr": 15.94,
-    "gan_ssim": 1.7422
+    "blurred_psnr": 27.14,
+    "blurred_ssim": 1.7662,
+    "classical_psnr": 27.09,
+    "classical_ssim": 1.7062,
+    "gan_psnr": 22.13,
+    "gan_ssim": 1.929
   },
   "Efficiency_Benchmark": {
     "device": "cpu",
     "batch_size": 1,
     "gan_parameters": 16655427,
     "gan_size_mb": 63.54,
-    "gan_latency_ms": 160.59,
+    "gan_latency_ms": 65.85,
     "classifier_parameters": 2230277,
     "classifier_size_mb": 8.51,
-    "classifier_latency_ms": 197.03,
-    "total_pipeline_latency_ms": 357.62
+    "classifier_latency_ms": 32.57,
+    "total_pipeline_latency_ms": 98.42
   },
   "Blur_Type_Breakdown": {
     "mild_motion": {
-      "num_samples": 8,
-      "clean_acc": 0.625,
-      "blurred_acc": 0.5,
-      "classical_acc": 0.5,
-      "gan_acc": 0.375
+      "num_samples": 37,
+      "clean_acc": 0.8918918918918919,
+      "blurred_acc": 0.7297297297297297,
+      "classical_acc": 0.8378378378378378,
+      "gan_acc": 0.4594594594594595
     },
     "strong_motion": {
-      "num_samples": 7,
-      "clean_acc": 1.0,
-      "blurred_acc": 0.2857142857142857,
-      "classical_acc": 0.14285714285714285,
-      "gan_acc": 0.2857142857142857
+      "num_samples": 37,
+      "clean_acc": 0.918918918918919,
+      "blurred_acc": 0.4864864864864865,
+      "classical_acc": 0.6486486486486487,
+      "gan_acc": 0.2702702702702703
     },
     "defocus": {
-      "num_samples": 7,
-      "clean_acc": 0.7142857142857143,
-      "blurred_acc": 0.14285714285714285,
-      "classical_acc": 0.14285714285714285,
-      "gan_acc": 0.14285714285714285
+      "num_samples": 36,
+      "clean_acc": 0.8333333333333334,
+      "blurred_acc": 0.5,
+      "classical_acc": 0.5,
+      "gan_acc": 0.4722222222222222
     }
   }
 }

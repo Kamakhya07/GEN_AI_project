@@ -6,6 +6,7 @@ __pycache__/
 # Data
 data/raw/
 data/processed/patches/
+data/processed/real_patches/
 
 # Results checkpoints & caches
 *.pt

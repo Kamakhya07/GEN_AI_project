@@ -1,0 +1,80 @@
+# Configuration for Training on Real Vehicle Camera Road Damage Dataset
+
+project:
+  name: "GAN-Based Image Deblurring for Robust CNN-Based Road Damage Classification (Real Data)"
+  version: "1.0.0"
+  seed: 42
+  device: "cuda"
+
+data:
+  raw_dir: "data/raw/road_damage_real/data"
+  processed_dir: "data/processed/real_patches"
+  manifest_path: "data/processed/splits_real.json"
+  class_counts_path: "data/processed/splits_real_class_distribution.json"
+  patch_size: [128, 128]
+  split_ratios:
+    train: 0.70
+    val: 0.15
+    test: 0.15
+  classes:
+    0: "Normal"
+    1: "Longitudinal Crack"
+    2: "Transverse Crack"
+    3: "Alligator Crack"
+    4: "Pothole"
+  padding_ratio: 0.20
+  normal_patches_per_image: 2
+
+degradation:
+  blur_types:
+    - "mild_motion"
+    - "strong_motion"
+    - "defocus"
+  mild_motion:
+    kernel_sizes: [5, 7, 9]
+    angle_range: [0, 180]
+  strong_motion:
+    kernel_sizes: [13, 17, 21]
+    angle_range: [0, 180]
+  defocus:
+    kernel_sizes: [7, 11, 15]
+    sigma_range: [1.5, 3.5]
+  fixed_test_seed: 999
+
+classical_restoration:
+  method: "unsharp_mask"
+  unsharp_strength: 1.5
+  radius: 1.0
+
+models:
+  gan:
+    in_channels: 3
+    out_channels: 3
+    generator_features: 64
+    discriminator_features: 64
+    lambda_l1: 100.0
+    lr: 0.0002
+    beta1: 0.5
+    beta2: 0.999
+    batch_size: 16
+    epochs: 10
+    save_every: 2
+    early_stopping_patience: 5
+
+  classifier:
+    architecture: "mobilenet_v2"
+    num_classes: 5
+    pretrained: true
+    fine_tune_layers: 4
+    lr: 0.0005
+    weight_decay: 0.0001
+    batch_size: 16
+    epochs: 10
+    use_class_weights: true
+
+evaluation:
+  hardware: "Declared dynamically at runtime (CPU or CUDA)"
+  batch_size: 1
+  export_dir: "results"
+  confusion_matrix_dir: "results/figures/confusion_matrices"
+  samples_dir: "results/figures/restoration_samples"

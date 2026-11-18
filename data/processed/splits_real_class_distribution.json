@@ -1,0 +1,17 @@
+{
+  "train": {
+    "Pothole": 175,
+    "Longitudinal Crack": 177,
+    "Normal": 174
+  },
+  "val": {
+    "Pothole": 43,
+    "Longitudinal Crack": 34,
+    "Normal": 37
+  },
+  "test": {
+    "Longitudinal Crack": 39,
+    "Normal": 39,
+    "Pothole": 32
+  }
+}
