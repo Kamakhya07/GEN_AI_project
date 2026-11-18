@@ -89,9 +89,9 @@ We conduct a rigorous, fair-comparison protocol. A single MobileNetV2 checkpoint
 | Condition | Accuracy | Macro-F1 | PSNR (dB) | SSIM | Latency (ms) |
 | :--- | :---: | :---: | :---: | :---: | :---: |
 | **Exp A: Clean Reference** | 88.2% | 0.877 | — | — | 32.6 ms |
-| **Exp B: Blurred (Baseline)** | 57.3% | 0.555 | 27.14 | 1.766 | 32.6 ms |
-| **Exp C: Classical Restored** | 66.4% | 0.660 | 27.09 | 1.706 | 33.8 ms |
-| **Exp D: GAN Restored (Ours)** | 40.0% | 0.367 | 22.13 | 1.929 | 98.4 ms |
+| **Exp B: Blurred (Baseline)** | 57.3% | 0.555 | 27.14 | 0.650 | 32.6 ms |
+| **Exp C: Classical Restored** | 66.4% | 0.660 | 27.09 | 0.659 | 33.8 ms |
+| **Exp D: GAN Restored (Ours)** | 40.0% | 0.367 | 22.13 | 0.476 | 98.4 ms |
 | **Exp E: Blur-Augmented** | 78.2% | 0.777 | — | — | 32.6 ms |
 
 ---

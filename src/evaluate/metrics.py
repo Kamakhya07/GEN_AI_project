@@ -56,15 +56,22 @@ def compute_ssim(img1: np.ndarray, img2: np.ndarray) -> float:
     gray1 = cv2.cvtColor(img1, cv2.COLOR_RGB2GRAY) if img1.ndim == 3 else img1
     gray2 = cv2.cvtColor(img2, cv2.COLOR_RGB2GRAY) if img2.ndim == 3 else img2
 
-    c1 = (0.01 * 255) ** 2
-    c2 = (0.03 * 255) ** 2
+    gray1 = gray1.astype(np.float64)
+    gray2 = gray2.astype(np.float64)
+
+    c1 = (0.01 * 255.0) ** 2
+    c2 = (0.03 * 255.0) ** 2
 
     mu1 = cv2.GaussianBlur(gray1, (11, 11), 1.5)
     mu2 = cv2.GaussianBlur(gray2, (11, 11), 1.5)
 
-    sigma1_sq = cv2.GaussianBlur(gray1 ** 2, (11, 11), 1.5) - mu1 ** 2
-    sigma2_sq = cv2.GaussianBlur(gray2 ** 2, (11, 11), 1.5) - mu2 ** 2
-    sigma12 = cv2.GaussianBlur(gray1 * gray2, (11, 11), 1.5) - mu1 * mu2
+    mu1_sq = mu1 ** 2
+    mu2_sq = mu2 ** 2
+    mu1_mu2 = mu1 * mu2
 
-    ssim_map = ((2 * mu1 * mu2 + c1) * (2 * sigma12 + c2)) / ((mu1 ** 2 + mu2 ** 2 + c1) * (sigma1_sq + sigma2_sq + c2))
-    return float(np.mean(ssim_map))
+    sigma1_sq = np.maximum(0, cv2.GaussianBlur(gray1 ** 2, (11, 11), 1.5) - mu1_sq)
+    sigma2_sq = np.maximum(0, cv2.GaussianBlur(gray2 ** 2, (11, 11), 1.5) - mu2_sq)
+    sigma12 = cv2.GaussianBlur(gray1 * gray2, (11, 11), 1.5) - mu1_mu2
+
+    ssim_map = ((2 * mu1_mu2 + c1) * (2 * sigma12 + c2)) / ((mu1_sq + mu2_sq + c1) * (sigma1_sq + sigma2_sq + c2))
+    return float(np.clip(np.mean(ssim_map), 0.0, 1.0))

@@ -161,22 +161,22 @@
   },
   "Restoration_Quality": {
     "blurred_psnr": 27.14,
-    "blurred_ssim": 1.7662,
+    "blurred_ssim": 0.6496,
     "classical_psnr": 27.09,
-    "classical_ssim": 1.7062,
+    "classical_ssim": 0.6587,
     "gan_psnr": 22.13,
-    "gan_ssim": 1.929
+    "gan_ssim": 0.4756
   },
   "Efficiency_Benchmark": {
     "device": "cpu",
     "batch_size": 1,
     "gan_parameters": 16655427,
     "gan_size_mb": 63.54,
-    "gan_latency_ms": 65.85,
+    "gan_latency_ms": 213.35,
     "classifier_parameters": 2230277,
     "classifier_size_mb": 8.51,
-    "classifier_latency_ms": 32.57,
-    "total_pipeline_latency_ms": 98.42
+    "classifier_latency_ms": 203.33,
+    "total_pipeline_latency_ms": 416.68
   },
   "Blur_Type_Breakdown": {
     "mild_motion": {

@@ -34,19 +34,21 @@ def calculate_psnr_ssim_batch(preds: torch.Tensor, targets: torch.Tensor) -> Dic
         psnr_vals.append(psnr)
 
         # SSIM calculation per channel
-        gray_p = cv2.cvtColor(p, cv2.COLOR_RGB2GRAY)
-        gray_t = cv2.cvtColor(t, cv2.COLOR_RGB2GRAY)
-        # Simplified SSIM for fast computation
-        c1 = (0.01 * 255) ** 2
-        c2 = (0.03 * 255) ** 2
+        gray_p = cv2.cvtColor(p, cv2.COLOR_RGB2GRAY).astype(np.float64)
+        gray_t = cv2.cvtColor(t, cv2.COLOR_RGB2GRAY).astype(np.float64)
+        c1 = (0.01 * 255.0) ** 2
+        c2 = (0.03 * 255.0) ** 2
         mu_p = cv2.GaussianBlur(gray_p, (11, 11), 1.5)
         mu_t = cv2.GaussianBlur(gray_t, (11, 11), 1.5)
-        sigma_p_sq = cv2.GaussianBlur(gray_p ** 2, (11, 11), 1.5) - mu_p ** 2
-        sigma_t_sq = cv2.GaussianBlur(gray_t ** 2, (11, 11), 1.5) - mu_t ** 2
-        sigma_pt = cv2.GaussianBlur(gray_p * gray_t, (11, 11), 1.5) - mu_p * mu_t
+        mu_p_sq = mu_p ** 2
+        mu_t_sq = mu_t ** 2
+        mu_pt = mu_p * mu_t
+        sigma_p_sq = np.maximum(0, cv2.GaussianBlur(gray_p ** 2, (11, 11), 1.5) - mu_p_sq)
+        sigma_t_sq = np.maximum(0, cv2.GaussianBlur(gray_t ** 2, (11, 11), 1.5) - mu_t_sq)
+        sigma_pt = cv2.GaussianBlur(gray_p * gray_t, (11, 11), 1.5) - mu_pt
 
-        ssim_map = ((2 * mu_p * mu_t + c1) * (2 * sigma_pt + c2)) / ((mu_p ** 2 + mu_t ** 2 + c1) * (sigma_p_sq + sigma_t_sq + c2))
-        ssim_vals.append(float(np.mean(ssim_map)))
+        ssim_map = ((2 * mu_pt + c1) * (2 * sigma_pt + c2)) / ((mu_p_sq + mu_t_sq + c1) * (sigma_p_sq + sigma_t_sq + c2))
+        ssim_vals.append(float(np.clip(np.mean(ssim_map), 0.0, 1.0)))
 
     return {
         "psnr": float(np.mean(psnr_vals)),
