@@ -15,6 +15,8 @@ data/processed/real_patches/
 
 # Secrets and environment configurations
 .env
-.env.*
+.env.local
+.env.*.local
 .streamlit/secrets.toml
+
 
