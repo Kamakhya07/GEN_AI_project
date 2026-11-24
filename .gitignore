@@ -12,3 +12,9 @@ data/processed/real_patches/
 *.pt
 .cache/
 .ipynb_checkpoints/
+
+# Secrets and environment configurations
+.env
+.env.*
+.streamlit/secrets.toml
+

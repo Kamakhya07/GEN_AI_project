@@ -41,6 +41,13 @@ from src.integrations.member2_cnn import (
     SEVERITY_CHECKPOINT_PATH
 )
 
+# Google Gemini AI Reporting Copilot
+from src.report.gemini_assistant import (
+    get_gemini_api_key,
+    verify_gemini_key,
+    generate_civil_engineering_report
+)
+
 # -----------------------------------------------------------------------------
 # Signal Quality Metric Helpers (Strictly Bounded Float64 Formulation)
 # -----------------------------------------------------------------------------
@@ -127,7 +134,7 @@ st.markdown("""
     }
     [data-testid="stSidebar"] hr {
         border-color: rgba(56, 189, 248, 0.12) !important;
-        margin: 1.0rem 0 !important;
+        margin: 0.9rem 0 !important;
     }
     [data-testid="stSidebar"] .stMarkdown h3, 
     [data-testid="stSidebar"] .stMarkdown h2 {
@@ -216,6 +223,11 @@ st.markdown("""
         color: #38bdf8;
         border: 1px solid rgba(56, 189, 248, 0.3);
     }
+    .badge-gemini {
+        background: rgba(168, 85, 247, 0.15);
+        color: #c084fc;
+        border: 1px solid rgba(168, 85, 247, 0.35);
+    }
     .badge-device {
         background: rgba(148, 163, 184, 0.1);
         color: #cbd5e1;
@@ -250,10 +262,6 @@ st.markdown("""
     .workflow-step.active {
         border-color: var(--accent-teal);
         box-shadow: 0 0 10px rgba(45, 212, 191, 0.12);
-    }
-    .workflow-step.pending-step {
-        border-color: rgba(245, 158, 11, 0.35);
-        background: rgba(26, 20, 10, 0.4);
     }
     .step-stage {
         font-size: 0.60rem;
@@ -502,6 +510,30 @@ st.markdown("""
         height: 100%;
         border-radius: 3px;
         transition: width 0.4s ease;
+    }
+
+    /* Gemini AI Copilot Card */
+    .ai-copilot-card {
+        background: linear-gradient(135deg, rgba(14, 25, 48, 0.95) 0%, rgba(9, 16, 32, 0.98) 100%);
+        border: 1px solid rgba(168, 85, 247, 0.4);
+        border-radius: 14px;
+        padding: 20px;
+        margin: 14px 0;
+        box-shadow: 0 4px 24px rgba(168, 85, 247, 0.12);
+    }
+    .ai-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.68rem;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        padding: 4px 10px;
+        border-radius: 9999px;
+        background: rgba(168, 85, 247, 0.16);
+        color: #c084fc;
+        border: 1px solid rgba(168, 85, 247, 0.35);
     }
 
     /* Pending Integration Cards */
@@ -807,6 +839,10 @@ def localize_distress_regions(img_rgb: np.ndarray, pred_class: str) -> tuple:
 m1_pill = '<span class="badge-pill badge-online">M1 GAN: Ready</span>' if member1_available else '<span class="badge-pill badge-pending">M1 GAN: Pending Weights</span>'
 m2_det_pill = '<span class="badge-pill badge-online">M2 CNN: Ready</span>' if (member2_det_available or member2_sev_available) else '<span class="badge-pill badge-pending">M2 CNN: Pending Weights</span>'
 
+# Check if Gemini API Key is available
+gemini_detected_key = get_gemini_api_key()
+gemini_pill = '<span class="badge-pill badge-gemini">✦ Gemini AI: Active</span>' if gemini_detected_key else '<span class="badge-pill badge-pending">✦ Gemini: Ready for Key</span>'
+
 st.markdown(f"""
 <div class="top-navbar">
     <div>
@@ -818,6 +854,7 @@ st.markdown(f"""
         <span class="badge-pill badge-dataset">🎯 RDD2022 (92.1% Acc)</span>
         {m1_pill}
         {m2_det_pill}
+        {gemini_pill}
         <span class="badge-pill badge-device">Device: {str(device).upper()}</span>
     </div>
 </div>
@@ -974,6 +1011,29 @@ with st.sidebar:
     st.markdown("### 🔬 5. Visual Diagnostics")
     edge_mode = st.toggle("Highlight Edge Contours (Sobel Gradient)", value=False, help="Computes high-frequency edge gradients to evaluate crack boundary restoration.")
 
+    st.markdown("---")
+    st.markdown("### ✦ 6. Gemini Reporting Copilot")
+    with st.expander("🔑 Gemini API Key & Config", expanded=not bool(gemini_detected_key)):
+        user_key_input = st.text_input(
+            "Google Gemini API Key",
+            type="password",
+            value="",
+            placeholder="AIzaSy... or loaded from .env",
+            help="Securely stored in session memory or loaded from GEMINI_API_KEY environment variable. Never exposed or logged."
+        )
+        active_gemini_key = get_gemini_api_key(user_key_input)
+        if active_gemini_key:
+            st.caption("🔒 Key detected & encrypted in memory")
+            if st.button("Verify Gemini API Key", key="btn_verify_gemini"):
+                with st.spinner("Pinging Google Gemini API..."):
+                    ok, msg = verify_gemini_key(active_gemini_key)
+                    if ok:
+                        st.success(f"✅ {msg}")
+                    else:
+                        st.error(f"❌ {msg}")
+        else:
+            st.caption("⚠️ No key detected. Set `GEMINI_API_KEY` in `.env` or paste above.")
+
 # -----------------------------------------------------------------------------
 # 7. Pipeline Execution & Processing
 # -----------------------------------------------------------------------------
@@ -1067,18 +1127,62 @@ if raw_image is not None:
     view_unet = compute_sobel_edges(unet_img) if edge_mode else unet_img
     view_distress = compute_sobel_edges(distress_annotated_img) if edge_mode else distress_annotated_img
 
+    # Build Structured Inspection Payload for Reporting
+    report_data = {
+        "timestamp": time.strftime("%Y-%m-%d %H:%M:%S"),
+        "survey_metadata": {
+            "vehicle_id": "Survey Vehicle SV-09",
+            "route_segment": "NH-48 Sector 4-B",
+            "gps_coordinates": "18.5204 N, 73.8567 E",
+            "speed_kmh": 42.5
+        },
+        "pipeline_stages": {
+            "stage1_ingestion": input_source,
+            "stage2_gan_deblur": generator_arch_choice,
+            "stage3_pothole_detection": f"{len(detected_boxes)} ROI localized",
+            "stage4_severity_classification": meta_gan["severity"],
+            "stage5_pci_assessment": pci_score
+        },
+        "diagnosis": pred_cls_gan,
+        "confidence_pct": round(float(conf_gan), 2),
+        "pci_metrics": {
+            "pci_score": pci_score,
+            "pci_grade": meta_gan["pci_grade"],
+            "standard": "ASTM D6433"
+        },
+        "work_order": {
+            "work_order_id": "WO-2026-0842",
+            "priority": meta_gan["work_order_priority"],
+            "est_cost": meta_gan["est_cost"],
+            "equipment": meta_gan["equipment"],
+            "action": meta_gan["action"]
+        },
+        "degradation_simulated": blur_mode,
+        "signal_quality": {
+            "input_psnr_db": round(float(psnr_degraded), 2),
+            "restored_psnr_db": round(float(psnr_gan), 2),
+            "ssim": round(float(ssim_gan), 4)
+        },
+        "latency_ms": {
+            "gan_deblur": round(float(t_gan), 2),
+            "classifier": round(float(lat_gan), 2),
+            "total": round(float(t_gan + lat_gan), 2)
+        }
+    }
+
     # -----------------------------------------------------------------------------
     # 8. Dashboard Layout: 5-Stage Integrated Architecture
     # -----------------------------------------------------------------------------
     col_left, col_right = st.columns([1.65, 1.0], gap="large")
 
-    # LEFT COLUMN: Core Workflow & Comparative Inspection
+    # LEFT COLUMN: Core Workflow, Comparative Inspection & Gemini AI Copilot
     with col_left:
-        main_tab1, main_tab2, main_tab3, main_tab4 = st.tabs([
+        main_tab1, main_tab2, main_tab3, main_tab4, main_tab5 = st.tabs([
             "🛣️ 5-Stage Workflow Pipeline",
             "⚡ 3-Panel Optical Inspection",
             "🔬 Architecture Benchmarking",
-            "🤝 Team Integration Hub"
+            "🤝 Team Integration Hub",
+            "✦ Gemini AI Copilot Report"
         ])
 
         # TAB 1: 5-STAGE WORKFLOW PIPELINE
@@ -1402,6 +1506,81 @@ if raw_image is not None:
             </div>
             """, unsafe_allow_html=True)
 
+        # TAB 5: GEMINI AI COPILOT REPORT
+        with main_tab5:
+            st.markdown("""
+            <div class="dash-card">
+                <div class="card-title">
+                    <span>✦ Google Gemini AI Highway Infrastructure & Maintenance Brief</span>
+                </div>
+            """, unsafe_allow_html=True)
+
+            active_key = get_gemini_api_key(user_key_input)
+
+            if active_key:
+                st.markdown("""
+                <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;">
+                    <div style="font-size:0.80rem; color:#cbd5e1;">
+                        Generates a formal Civil Engineering Municipal Report grounded in actual CNN pothole detection, ASTM D6433 PCI score, and deblurring telemetry.
+                    </div>
+                    <span class="ai-badge">✦ Gemini Copilot Online</span>
+                </div>
+                """, unsafe_allow_html=True)
+
+                btn_generate = st.button("⚡ Generate AI Civil Engineering Brief", key="btn_gen_gemini_report", type="primary")
+
+                if btn_generate:
+                    with st.spinner("Analyzing structural pavement data & compiling civil engineering brief..."):
+                        ok, report_out = generate_civil_engineering_report(report_data, active_key)
+                        if ok:
+                            st.session_state["gemini_ai_report"] = report_out
+                            st.success("✅ Municipal Engineering Brief compiled successfully!")
+                        else:
+                            st.error(f"❌ Failed to generate report: {report_out}")
+
+                if "gemini_ai_report" in st.session_state:
+                    st.markdown("""
+                    <div class="ai-copilot-card">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; border-bottom:1px solid rgba(168,85,247,0.25); padding-bottom:8px;">
+                            <span style="font-size:0.82rem; font-weight:700; color:#c084fc; text-transform:uppercase; letter-spacing:0.04em;">Official Municipal Highway Engineering Assessment</span>
+                            <span style="font-size:0.72rem; color:var(--text-muted); font-family:'JetBrains Mono',monospace;">Model: Gemini-1.5-Flash</span>
+                        </div>
+                    """, unsafe_allow_html=True)
+                    st.markdown(st.session_state["gemini_ai_report"])
+                    st.markdown("</div>", unsafe_allow_html=True)
+
+                    st.download_button(
+                        label="📥 Download Civil Engineering Brief (Markdown)",
+                        data=st.session_state["gemini_ai_report"],
+                        file_name=f"pavement_civil_engineering_brief_{int(time.time())}.md",
+                        mime="text/markdown",
+                        use_container_width=True
+                    )
+            else:
+                st.markdown("""
+                <div class="pending-integration-card" style="border-color:rgba(168,85,247,0.5); background:linear-gradient(135deg, rgba(28,15,45,0.6) 0%, rgba(13,21,39,0.95) 100%);">
+                    <div class="pending-header">
+                        <span class="pending-badge" style="background:rgba(168,85,247,0.18); color:#c084fc; border-color:rgba(168,85,247,0.4);">✦ GEMINI COPILOT: AWAITING API KEY</span>
+                        <span style="font-size:0.75rem; color:#f1f5f9; font-weight:600;">Secure Environment Loader</span>
+                    </div>
+                    <div class="pending-title">Enter Gemini API Key to Activate Engineering Briefs</div>
+                    <div class="pending-desc">
+                        Google Gemini API provides real-time explanations of CNN pothole detections, ASTM D6433 PCI ratings, and civil engineering remediation work plans.
+                    </div>
+                    <div class="pending-code-block" style="color:#c084fc;">
+                        Configuration Options:<br>
+                        1. Add to <code>.env</code> file: <code>GEMINI_API_KEY=your_key_here</code><br>
+                        2. Or enter securely in the sidebar under <b>"🔑 Gemini API Key & Config"</b><br>
+                        3. Streamlit Cloud: Add <code>GEMINI_API_KEY</code> to Streamlit Secrets
+                    </div>
+                    <div class="pending-note">
+                        🔒 <i>Your API key is never hardcoded, exposed, or committed to Git. Gemini is strictly an auxiliary reporting assistant and does NOT fabricate CNN predictions.</i>
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
+
+            st.markdown("</div>", unsafe_allow_html=True)
+
     # RIGHT COLUMN: Stage 4 & 5 Diagnosis, PCI Assessment & Work Order
     with col_right:
         # Hero Diagnosis Card (Stage 4)
@@ -1474,47 +1653,6 @@ if raw_image is not None:
         st.markdown("</div>", unsafe_allow_html=True)
 
         # Export Report JSON
-        report_data = {
-            "timestamp": time.strftime("%Y-%m-%d %H:%M:%S"),
-            "survey_metadata": {
-                "vehicle_id": "Survey Vehicle SV-09",
-                "route_segment": "NH-48 Sector 4-B",
-                "gps_coordinates": "18.5204 N, 73.8567 E",
-                "speed_kmh": 42.5
-            },
-            "pipeline_stages": {
-                "stage1_ingestion": input_source,
-                "stage2_gan_deblur": generator_arch_choice,
-                "stage3_pothole_detection": f"{len(detected_boxes)} ROI localized",
-                "stage4_severity_classification": meta_gan["severity"],
-                "stage5_pci_assessment": pci_score
-            },
-            "diagnosis": pred_cls_gan,
-            "confidence_pct": round(float(conf_gan), 2),
-            "pci_metrics": {
-                "pci_score": pci_score,
-                "pci_rating": meta_gan["pci_grade"],
-                "standard": "ASTM D6433"
-            },
-            "work_order": {
-                "work_order_id": "WO-2026-0842",
-                "priority": meta_gan["work_order_priority"],
-                "est_cost": meta_gan["est_cost"],
-                "equipment": meta_gan["equipment"],
-                "action": meta_gan["action"]
-            },
-            "degradation_simulated": blur_mode,
-            "signal_quality": {
-                "input_psnr_db": round(float(psnr_degraded), 2),
-                "restored_psnr_db": round(float(psnr_gan), 2),
-                "ssim": round(float(ssim_gan), 4)
-            },
-            "latency_ms": {
-                "gan_deblur": round(float(t_gan), 2),
-                "classifier": round(float(lat_gan), 2),
-                "total": round(float(t_gan + lat_gan), 2)
-            }
-        }
         st.download_button(
             label="📥 Export Inspection Diagnostic Report (JSON)",
             data=json.dumps(report_data, indent=2),
