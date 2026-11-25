@@ -1,0 +1,18 @@
+
+YOLO Road Damage Detection - Validation Results
+
+Model: YOLOv8m
+Dataset: RDD2022 India
+Epochs: 50
+
+Precision: 0.492
+Recall: 0.412
+mAP50: 0.404
+mAP50-95: 0.172
+
+Per-class AP50:
+Longitudinal Crack: 0.339
+Transverse Crack: 0.089
+Alligator Crack: 0.623
+Other Corruption: 0.526
+Pothole: 0.443

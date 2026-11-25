@@ -1,78 +1,54 @@
-# Member 2: CNN Pothole Detection & Severity Classification
+# Member 2: CNN Road Damage Detection & Severity Classification
 
-Welcome to the **RoadVision AI Member 2 CNN Subsystem**. This folder is completely decoupled so you can independently develop, train, and commit your CNN models without causing merge conflicts or breaking the main dashboard.
+Welcome to the **RoadVision AI Member 2 CNN Subsystem**. This module houses Member 2's trained computer vision models for road damage detection and pothole severity classification.
 
 ---
 
 ## 🎯 Role & Objective
-- **Subsystem:** Deep CNN for Pothole Detection & Distress Severity Classification.
+- **Subsystem:** Deep CNN & YOLO for Road Damage Detection & Distress Severity Assessment.
 - **Workflow Position:** Stages 3 & 4:
   `Road Image Upload → GAN Deblurring → **Pothole Detection** → **Severity Classification** → Final Assessment`.
 - **Goal:**
-  1. Detect and localize potholes and road damage on restored road images.
-  2. Grade road distress into severity categories (**Low**, **Moderate**, **Critical**) to drive municipal maintenance dispatch.
+  1. Detect and localize 5 road damage categories (`Longitudinal_Crack`, `Transverse_Crack`, `Alligator_Crack`, `Other_Corruption`, `Pothole`) with spatial bounding boxes.
+  2. Grade road distress into severity categories (**Minor**, **Medium**, **Major**) to drive municipal maintenance dispatch.
+
+---
+
+## 📁 Integrated Models & Artifacts
+
+| Component | File Path | Model Family | Description | Classes |
+| :--- | :--- | :--- | :--- | :--- |
+| **Road Damage Detector** | `checkpoints/best.pt` (or `best.pt`) | YOLOv8m | Trained on RDD2022 India (50 epochs) | Longitudinal Crack, Transverse Crack, Alligator Crack, Other Corruption, Pothole |
+| **Severity Classifier** | `checkpoints/Severity_classifier.pkl` (or `Severity_classifier.pkl`) | FastAI / PyTorch CNN | Deep vision severity model | `['minor_pothole', 'medium_pothole', 'major_pothole']` $\rightarrow$ `['Minor', 'Medium', 'Major']` |
+| **Validation Metrics** | `metrics.txt` | Text Report | Precision: 0.492, Recall: 0.412, mAP50: 0.404 | Per-class AP: Alligator Crack (0.623), Pothole (0.443) |
 
 ---
 
 ## 📁 Directory Structure
 ```
 src/integrations/member2_cnn/
-├── __init__.py           # Package exports
-├── detector.py           # Pothole detection model (localization head)
-├── classifier.py         # Severity classification model (Low/Moderate/Critical)
-├── infer.py              # Combined inference engine consumed by dashboard
-├── README.md             # This guide
-├── checkpoints/          # Put your trained weights here
+├── __init__.py           # Package exports (YOLORoadDamageDetector, TrainedSeverityClassifier, etc.)
+├── detector.py           # YOLOv8 road damage detection wrapper + bounding box renderer
+├── classifier.py         # CNN Severity Classifier wrapper with cross-platform unpickler
+├── infer.py              # End-to-end inference engine consumed by Streamlit dashboard
+├── README.md             # This documentation
+├── checkpoints/          # Trained weights directory
 │   ├── .gitkeep
-│   ├── detector_best.pt  # <-- TARGET DETECTOR CHECKPOINT
-│   └── severity_best.pt  # <-- TARGET SEVERITY CHECKPOINT
-└── notebooks/            # Put your Jupyter / Google Colab notebooks here
-    └── .gitkeep
+│   ├── best.pt                   # YOLOv8m road damage model (52 MB)
+│   └── Severity_classifier.pkl   # Severity classifier CNN model (87.5 MB)
+└── notebooks/            # Training scripts & notebooks
+    ├── .gitkeep
+    └── train_cnn_starter.py
 ```
 
 ---
 
-## 🚀 Integration Steps
+## 🚀 Running Verification
 
-### Step 1: Model Architectures (`detector.py` & `classifier.py`)
-- `PotholeDetector`: MobileNetV2 backbone + localization regression/classification head predicting `[score, x1, y1, x2, y2]`.
-- `SeverityClassifier`: MobileNetV2 backbone predicting 3 severity tiers: `["Low", "Moderate", "Critical"]`.
-- If you use custom architectures, edit `detector.py` or `classifier.py` accordingly.
+You can verify both models from Python or terminal:
 
-### Step 2: Training & Checkpoint Export
-Save your trained PyTorch weights to:
-1. `src/integrations/member2_cnn/checkpoints/detector_best.pt`
-2. `src/integrations/member2_cnn/checkpoints/severity_best.pt`
-
-Save format:
-```python
-# Detector
-torch.save({
-    "model_state_dict": detector.state_dict(),
-    "epoch": epoch,
-    "val_mAP": val_mAP
-}, "src/integrations/member2_cnn/checkpoints/detector_best.pt")
-
-# Severity Classifier
-torch.save({
-    "model_state_dict": classifier.state_dict(),
-    "epoch": epoch,
-    "val_acc": val_acc
-}, "src/integrations/member2_cnn/checkpoints/severity_best.pt")
-```
-
-### Step 3: Verify Inference
-Run a quick test from the workspace root:
 ```powershell
-python -c "from src.integrations.member2_cnn import is_detector_available, is_severity_available; print('Detector ready:', is_detector_available()); print('Severity ready:', is_severity_available())"
+python -c "from src.integrations.member2_cnn import is_detector_available, is_severity_available, load_member2_models; print('Detector:', is_detector_available()); print('Severity:', is_severity_available()); m = load_member2_models(); print('Loaded successfully:', m['detector'] is not None and m['classifier'] is not None)"
 ```
 
-### Step 4: Live Dashboard Verification
-- When checkpoints are placed in `checkpoints/`, the dashboard's Stage 3 (Pothole Detection) and Stage 4 (Severity Classification) panels will automatically switch from `[Pending Integration: Awaiting Member 2 Checkpoints]` to live inference mode, rendering real bounding boxes and severity metrics!
-
----
-
-## ⚙️ Specifications
-- **Input Image:** $224 \times 224$ RGB image, ImageNet normalized (`mean=[0.485, 0.456, 0.406]`, `std=[0.229, 0.224, 0.225]`).
-- **Pothole Detection Output:** Bounding box coordinates normalized to `[0.0, 1.0]`.
-- **Severity Output:** Softmax probabilities over `["Low", "Moderate", "Critical"]`.
+The Streamlit dashboard (`app/streamlit_app.py`) automatically connects image uploads to these models when **"Member 2 CNN Module"** is selected in the sidebar, displaying live bounding boxes, confidence tags, and severity bars.

@@ -63,6 +63,47 @@ Patches are split strictly by **unique source image ID** (70% train, 15% validat
 
 ---
 
+## 🛣️ Production Architecture: RoadVision AI Platform
+
+RoadVision AI implements a modular, decoupled highway defect inspection and image enhancement platform with user-controlled execution gates:
+
+```
+Upload Road Image ➔ Select Processing Method ➔ User Decision Gate ➔ CNN Detection (Optional) ➔ Severity Classification ➔ Final Assessment
+```
+
+### 1. Image Processing Methods
+- **DeblurGAN-v2 (Generative Deblurring):**
+  - Official DeblurGAN-v2 architecture based on [VITA-Group/DeblurGANv2](https://github.com/VITA-Group/DeblurGANv2).
+  - Uses the lightweight `FPN-MobileNet` generator (~3.16M parameters) loaded with official author weights (`fpn_mobilenet.h5`).
+  - Features 32-pixel spatial boundary reflection padding and fast edge deconvolution.
+  - Preserves original BSD 2-Clause / BSD 3-Clause licenses in `src/models/deblurgan/LICENSE`.
+- **OpenCV Enhancement (Classical Fallback):**
+  - Standalone, deterministic image enhancement in `src/degradation/opencv_enhancement.py`.
+  - **Denoising:** Bilateral filtering ($d=7, \sigma=50$) to suppress asphalt sensor grain while preserving crack edge contours.
+  - **CLAHE:** Contrast Limited Adaptive Histogram Equalization applied exclusively to the Luminance ($L$) channel in LAB color space (`clipLimit=2.5`, `grid=8x8`), preventing chromatic distortion.
+  - **Sharpening:** Gaussian unsharp masking ($gain=1.3, \sigma=2.0$) to highlight high-frequency fracture boundaries.
+- **Original Image (Skip Processing):**
+  - Bypasses image modification, passing raw sensor imagery directly to downstream evaluation.
+
+### 2. User-Controlled Workflow & Decoupled Execution
+- **Zero Automatic CNN Triggering:** CNN inference will **never run automatically** upon image upload or processing selection.
+- **Explicit User Decision Gate:** Following image processing, the user is presented with two explicit actions:
+  - **🔍 Run CNN Detection:** Explicitly triggers YOLOv8m pothole detection and deep severity classification on the processed image.
+  - **⏹️ Finish Image Processing:** Gracefully concludes the workflow without running deep learning detectors, providing processed image downloads, PSNR/SSIM gain metrics, and processing latency.
+- **GAN-Independent Operation:** RoadVision AI operates completely without GAN dependencies. If GAN weights are omitted or unavailable, the system automatically falls back to OpenCV Enhancement or Original pass-through.
+- **Fail-Safe Robustness:** If CNN inference encounters an error, all prior image processing outputs and signal quality metrics are preserved.
+
+### 3. Member 2 CNN Detection & Severity Modules
+- **Detector:** YOLOv8m trained on RDD2022 India (`best.pt`, mAP50: 0.404) outputting discrete bounding boxes and confidence scores.
+- **Severity Classifier:** Deep CNN classifier (`Severity_classifier.pkl`) categorizing pavement distress into **Minor**, **Medium**, and **Major** tiers.
+- **Civil Assessment:** Computes ASTM D6433 Pavement Condition Index (PCI) scores (0–100) and automated Municipal Work Order dispatches.
+
+### 4. Google Gemini AI Infrastructure Copilot
+- Optional civil engineering brief assistant (`src/report/gemini_assistant.py`) generating municipal road remediation reports grounded in real CNN detections and ASTM PCI metrics.
+- Secure environment configuration via `.env` (`GEMINI_API_KEY`) or in-app session memory without hardcoding keys.
+
+---
+
 ## 🚀 Quickstart Guide
 
 ### 1. Installation
@@ -71,6 +112,17 @@ Clone the repository and install requirements in your virtual environment:
 git clone https://github.com/your-username/road-damage-deblur-classification.git
 cd road-damage-deblur-classification
 pip install -r requirements.txt
+```
+
+### 2. Run Comprehensive Integration & Workflow Test Suite
+Verify DeblurGAN-v2, OpenCV fallback, CNN detection across all 3 modes, and user decision controls:
+```bash
+python test_user_workflow.py
+```
+
+### 3. Launch Interactive Streamlit Platform
+```bash
+streamlit run app/streamlit_app.py
 ```
 
 ### 2. Prepare Data (Synthetic / Smoke Test or RDD2022)

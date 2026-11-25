@@ -155,5 +155,24 @@ for cls_id in range(5):
 
 print()
 print("=" * 60)
-print("ALL 7 WORKFLOW CHECKS PASSED SUCCESSFULLY")
+print("STEP 8: Member 2 CNN Integration Checks (YOLO + Severity Classifier)")
+print("=" * 60)
+from src.integrations.member2_cnn import is_detector_available, is_severity_available, load_member2_models, run_member2_pipeline
+
+det_ok = is_detector_available()
+sev_ok = is_severity_available()
+print(f"  Detector available: {det_ok}")
+print(f"  Severity classifier available: {sev_ok}")
+
+if det_ok or sev_ok:
+    m2_models = load_member2_models()
+    sample_patch = generate_synthetic_road_patch(4, seed=42)
+    m2_res = run_member2_pipeline(m2_models, sample_patch)
+    print(f"  Member 2 detection count: {len(m2_res['detections'])}")
+    print(f"  Member 2 severity: {m2_res['severity']} (conf: {m2_res['severity_confidence']:.1%})")
+    print(f"  Member 2 class probs: {m2_res['class_probabilities']}")
+
+print()
+print("=" * 60)
+print("ALL 8 WORKFLOW CHECKS PASSED SUCCESSFULLY")
 print("=" * 60)

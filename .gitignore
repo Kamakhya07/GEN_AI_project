@@ -10,8 +10,14 @@ data/processed/real_patches/
 
 # Results checkpoints & caches
 *.pt
+!best.pt
+!src/integrations/member2_cnn/checkpoints/best.pt
+!src/integrations/member2_cnn/checkpoints/Severity_classifier.pkl
 .cache/
 .ipynb_checkpoints/
+
+# Databases
+*.db
 
 # Secrets and environment configurations
 .env
